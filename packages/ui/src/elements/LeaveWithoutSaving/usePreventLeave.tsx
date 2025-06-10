@@ -139,12 +139,33 @@ export const usePreventLeave = ({
       }
     }
 
+    // Handle back button clicks
+    function handlePopState(event: PopStateEvent) {
+      if (prevent && (!onPrevent ? !window.confirm(message) : true)) {
+        // Prevent the navigation by pushing the current state back
+        history.pushState(null, '', window.location.href)
+
+        if (typeof onPrevent === 'function') {
+          onPrevent()
+        }
+      }
+    }
+
+    // Add a state to the history so we can detect back button clicks
+    if (prevent) {
+      history.pushState(null, '', window.location.href)
+    }
+
     // Add the global click event listener
     document.addEventListener('click', handleClick, true)
+
+    // Add popstate event listener for back button
+    window.addEventListener('popstate', handlePopState)
 
     // Clean up the global click event listener when the component is unmounted
     return () => {
       document.removeEventListener('click', handleClick, true)
+      window.removeEventListener('popstate', handlePopState)
     }
   }, [onPrevent, prevent, message])
 
